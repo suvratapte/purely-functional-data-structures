@@ -102,15 +102,14 @@ insertNotLame value tree = snd $ check value tree
       then
         let (isNew, new) = check v left
         in
-          if isNew
-          then (True, Node new x right)
-          else (False, node)
+          useNewIfNeeded isNew node $ Node new x right
       else
         if v > x
         then
           let (isNew, new) = check v right
           in
-            if isNew
-            then (True, Node left x new)
-            else (False, node)
+            useNewIfNeeded isNew node $ Node left x new
         else (False, node)
+
+    useNewIfNeeded isNew old new =
+     if isNew then (True, new) else (False, old)
