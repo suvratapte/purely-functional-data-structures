@@ -60,16 +60,33 @@ element (say, the last element for which < returned false or <= returned true)
 and checking for equality only when you hit the bottom of the tree.
 -}
 
+{-
+Algorithm:
+
+search: Element to be searched for.
+carry: Intermediate element used in the algorithm.
+value: Value of the node being checked currently.
+
+1. Check if `search < value`.
+
+1a. If it is, we know surely that `search \= value`. So we do not need to
+consider `value`. So go to the left tree with `carry`.
+
+1b. If it is not, it is possible that `search == value`, so go to the right tree
+and pass `value` as `carry`.
+
+2. When reach `Empty`, check if `carry == search` and return the result.
+
+-}
+
 member' :: (Ord a) => a -> Tree a -> Bool
-member' x node = go x node
+member' search node = go search node
   where
     -- go :: (Ord a) => a -> Tree a -> Bool
     -- TODO:  Why does the above type signature not work?
-    go t Empty = t == x
-    go t (Node left value right)
-      | x < value = go t left
-      -- If the above branch (x < value) is not taken, we surely know that that
-      -- `x \= value`. Then when going to the right branch, pass t ahead.
+    go carry Empty = carry == search
+    go carry (Node left value right)
+      | search < value = go carry left
       | otherwise = go value right
 
 {-
