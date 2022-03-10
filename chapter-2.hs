@@ -13,7 +13,6 @@ Show that the resulting list of suffixes can be generated in O(n) time and rep-
 resented in O(n) space.
 -}
 
-
 suffixes :: [a] -> [[a]]
 suffixes [] = [[]]
 suffixes xs = xs : suffixes (tail xs)
@@ -127,3 +126,32 @@ insertNotLame value tree = snd $ check tree
       | isNew = (True, new)
       | otherwise = (False, old)
 
+{-
+Exercise 2.4
+
+Combine the ideas of the previous two exercises to obtain a version of insert
+that performs no unnecessary copying and uses no more than (d + 1) comparisons.
+-}
+
+-- Use the same algorithm as `member'` but instead of just returning boolean
+-- from an Empty node, also create and return a new node if necessary.
+insertNotLame' :: (Ord a) => a -> Tree a -> Tree a
+insertNotLame' value tree = snd $ check value tree
+  where
+    check carry Empty
+      | carry == value = (False, Empty)
+      | otherwise = (True, Node Empty value Empty)
+
+    check carry node@(Node left x right)
+      | value < x =
+        let (isNew, new) = check value left
+        in
+          useNewIfNeeded isNew node $ Node new x right
+      | otherwise =
+        let (isNew, new) = check x right
+        in
+          useNewIfNeeded isNew node $ Node left x new
+
+    useNewIfNeeded isNew old new
+      | isNew = (True, new)
+      | otherwise = (False, old)
