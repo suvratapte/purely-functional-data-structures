@@ -38,17 +38,17 @@ data Tree a =
 
 member :: (Ord a) => a -> Tree a -> Bool
 member _ Empty = False
-member x (Node left value right) =
-  if x < value then member x left
-  else if value < x then member x right
-  else True
+member x (Node left value right)
+  | x < value = member x left
+  | x > value = member x right
+  | otherwise = True
 
 insert :: (Ord a) => a -> Tree a -> Tree a
 insert x Empty = Node Empty x Empty
-insert x node@(Node left value right) =
-  if x < value then Node (insert x left) value right
-  else if value < x then Node left value (insert x right)
-  else node
+insert x node@(Node left value right)
+  | x < value = Node (insert x left) value right
+  | x > value = Node left value $ insert x right
+  | otherwise = node
 
 {-
 Exercise 2.2
@@ -66,12 +66,11 @@ member' x node = go x node
     -- go :: (Ord a) => a -> Tree a -> Bool
     -- TODO:  Why does the above type signature not work?
     go t Empty = t == x
-    go t (Node left value right) =
-      if x < value
-      then go t left
-      -- When going to the right branch, pass the parennt value as the value to
-      -- be searched for.
-      else go value right
+    go t (Node left value right)
+      | x < value = go t left
+      -- If the above branch (x < value) is not taken, we surely know that that
+      -- `x \= value`. Then when going to the right branch, pass t ahead.
+      | otherwise = go value right
 
 {-
 Exercise 2.3
@@ -86,30 +85,29 @@ one handler per insertion rather than one handler per iteration. --
 -- inserting.
 -- This implementation is simple but it will have a higher time complexity.
 insertLame :: (Ord a) => a -> Tree a -> Tree a
-insertLame x tree =
-  if member x tree
-  then tree
-  else insert x tree
+insertLame x tree
+  | member x tree = tree
+  | otherwise     = insert x tree
 
 -- Uses the `check` function which returns a Bool and a Tree. The Bool indicates
 -- if a copy was made or not.
 insertNotLame :: (Ord a) => a -> Tree a -> Tree a
 insertNotLame value tree = snd $ check value tree
   where
+    check ::  (Ord a) => a -> Tree a -> (Bool, Tree a)
     check v Empty = (True, Node Empty v Empty)
-    check v node@(Node left x right) =
-      if v < x
-      then
+    check v node@(Node left x right)
+      | v < x =
         let (isNew, new) = check v left
         in
           useNewIfNeeded isNew node $ Node new x right
-      else
-        if v > x
-        then
-          let (isNew, new) = check v right
-          in
-            useNewIfNeeded isNew node $ Node left x new
-        else (False, node)
+      | v > x =
+        let (isNew, new) = check v right
+        in
+          useNewIfNeeded isNew node $ Node left x new
+      | otherwise = (False, node)
 
-    useNewIfNeeded isNew old new =
-     if isNew then (True, new) else (False, old)
+    useNewIfNeeded isNew old new
+      | isNew = (True, new)
+      | otherwise = (False, old)
+
