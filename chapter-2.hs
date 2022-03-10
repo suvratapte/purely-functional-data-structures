@@ -109,17 +109,16 @@ insertLame x tree
 -- Uses the `check` function which returns a Bool and a Tree. The Bool indicates
 -- if a copy was made or not.
 insertNotLame :: (Ord a) => a -> Tree a -> Tree a
-insertNotLame value tree = snd $ check value tree
+insertNotLame value tree = snd $ check tree
   where
-    check ::  (Ord a) => a -> Tree a -> (Bool, Tree a)
-    check v Empty = (True, Node Empty v Empty)
-    check v node@(Node left x right)
-      | v < x =
-        let (isNew, new) = check v left
+    check Empty = (True, Node Empty value Empty)
+    check node@(Node left x right)
+      | value < x =
+        let (isNew, new) = check left
         in
           useNewIfNeeded isNew node $ Node new x right
-      | v > x =
-        let (isNew, new) = check v right
+      | value > x =
+        let (isNew, new) = check right
         in
           useNewIfNeeded isNew node $ Node left x new
       | otherwise = (False, node)
