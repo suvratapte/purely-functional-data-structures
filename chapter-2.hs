@@ -155,3 +155,30 @@ insertNotLame' value tree = snd $ check value tree
     useNewIfNeeded isNew old new
       | isNew = (True, new)
       | otherwise = (False, old)
+
+{-
+Exercise 2.5
+
+Sharing can also be useful within a single object, not just between objects. For
+example, if the two subtrees of a given node are identical, then they can be
+represented by the same tree.
+
+(a) Using this idea, write a function complete of type `Elem x int -> Tree`
+where complete (x, d) creates a complete binary tree of depth d with x stored in
+every node. (Of course, this function makes no sense for the set abstraction,
+but it can be useful as an auxiliary function for other abstractions, such as
+bags.) This function should run in O(d) time.
+
+(b) Extend this function to create balanced trees of arbitrary size. These trees
+will not always be complete binary trees, but should be as balanced as possible:
+for any given node, the two subtrees should differ in size by at most one. This
+function should run in 0(log n) time. (Hint: use a helper function create2 that,
+given a size m, creates a pair of trees, one of size m and one of size m+1.)
+-}
+
+complete :: a -> Int -> Tree a
+complete a 0 = Empty
+complete a depth =
+  let node = complete a $ depth - 1
+  in
+    Node node a node
