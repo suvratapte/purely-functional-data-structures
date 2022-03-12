@@ -13,7 +13,7 @@ data LeftistHeap a =
     Empty
   | Node Int a (LeftistHeap a) (LeftistHeap a)
   -- Rank, value, left heap, right heap
-  deriving (Show, Eq)
+  deriving (Eq, Show)
 
 rank :: LeftistHeap a -> Int
 rank Empty = 0
@@ -48,3 +48,38 @@ findMin (Node _ value _ _) = value
 deleteMin :: Ord a => LeftistHeap a -> LeftistHeap a
 deleteMin Empty = error "Empty heap"
 deleteMin (Node _ _ l r) = merge l r
+
+---
+
+{- Binomial Heaps -}
+
+data BinomialTree a =
+  BinomTNode Int a [BinomialTree a]
+  -- Rank value children
+  deriving (Eq, Show)
+
+-- This function should be used to link two trees of the same rank.
+-- One might want to add a check for that and raise an error if that is not the
+-- case.
+link :: Ord a => BinomialTree a -> BinomialTree a -> BinomialTree a
+link node@(BinomTNode rank value children) node'@(BinomTNode _ value' children')
+  | value < value' = BinomTNode (rank + 1) value $ node' : children
+  | otherwise = BinomTNode (rank + 1) value' $ node : children'
+
+bRank :: BinomialTree a -> Int
+bRank (BinomTNode rank _ _) = rank
+
+type BinomialHeap a = [BinomialTree a]
+
+insertBinomTree :: Ord a
+  => BinomialTree a -> BinomialHeap a -> BinomialHeap a
+insertBinomTree tree [] = [tree]
+insertBinomTree
+  tree@(BinomTNode rank value children)
+  heap@( tree'@(BinomTNode rank' value' children') : hs)
+  | rank < rank' = tree : heap
+  | rank == rank' = insertBinomTree (link tree tree') hs
+  | otherwise = tree' : insertBinomTree tree hs
+
+insertInBinomTree :: Ord a => a -> BinomialHeap a -> BinomialHeap a
+insertInBinomTree elem heap = insertBinomTree (BinomTNode 0 elem []) heap
