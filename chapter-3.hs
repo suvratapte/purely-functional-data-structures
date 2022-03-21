@@ -56,6 +56,7 @@ deleteMin (Node _ _ l r) = merge l r
 data BinomialTree a =
   BinomTNode Int a [BinomialTree a]
   -- Rank value children
+  -- children are stored in decreasing order of rank
   deriving (Eq, Show)
 
 -- This function should be used to link two trees of the same rank.
@@ -69,17 +70,55 @@ link node@(BinomTNode rank value children) node'@(BinomTNode _ value' children')
 bRank :: BinomialTree a -> Int
 bRank (BinomTNode rank _ _) = rank
 
+bElem :: BinomialTree a -> a
+bElem (BinomTNode _ a _) = a
+
+bChildren :: BinomialTree a -> [BinomialTree a]
+bChildren (BinomTNode _ _ children) = children
+
 type BinomialHeap a = [BinomialTree a]
 
-insertBinomTree :: Ord a
+insertBinomTreeInBinomHeap :: Ord a
   => BinomialTree a -> BinomialHeap a -> BinomialHeap a
-insertBinomTree tree [] = [tree]
-insertBinomTree
+insertBinomTreeInBinomHeap tree [] = [tree]
+insertBinomTreeInBinomHeap
   tree@(BinomTNode rank value children)
   heap@( tree'@(BinomTNode rank' value' children') : hs)
   | rank < rank' = tree : heap
-  | rank == rank' = insertBinomTree (link tree tree') hs
-  | otherwise = tree' : insertBinomTree tree hs
+  | rank == rank' = insertBinomTreeInBinomHeap (link tree tree') hs
+  -- TODO: Do we expect the below case?
+  -- rank > rank' otherwise = tree' : insertBinomTree tree hs
 
-insertInBinomTree :: Ord a => a -> BinomialHeap a -> BinomialHeap a
-insertInBinomTree elem heap = insertBinomTree (BinomTNode 0 elem []) heap
+insertElemBinomHeap :: Ord a => a -> BinomialHeap a -> BinomialHeap a
+insertElemBinomHeap elem heap =
+  insertBinomTreeInBinomHeap (BinomTNode 0 elem []) heap
+
+mergeBinomHeaps :: Ord a => BinomialHeap a -> BinomialHeap a -> BinomialHeap a
+mergeBinomHeaps h [] = h
+mergeBinomHeaps [] h = h
+mergeBinomHeaps heap@(t : ts) heap'@(t' : ts')
+  | bRank t < bRank t' = t : mergeBinomHeaps ts heap'
+  | bRank t > bRank t' = t' : mergeBinomHeaps heap ts'
+  | otherwise = insertBinomTreeInBinomHeap (link t t') $ mergeBinomHeaps ts ts'
+
+removeMinTreeFromHeap :: Ord a => BinomialHeap a -> (BinomialTree a, BinomialHeap a)
+removeMinTreeFromHeap [t] = (t, [])
+removeMinTreeFromHeap (t : ts) =
+  let (t', ts') = removeMinTreeFromHeap ts
+  in
+    if bElem t < bElem t'
+    then (t, ts)
+    else (t', t : ts')
+
+findMinimumFromHeap :: Ord a => BinomialHeap a -> a
+findMinimumFromHeap heap =
+  let (t, _) = removeMinTreeFromHeap heap
+  in bElem t
+
+deleteMinimumFromHeap :: Ord a => BinomialHeap a -> BinomialHeap a
+deleteMinimumFromHeap heap =
+  let (t, heap') = removeMinTreeFromHeap heap
+  in
+    -- Reversing is very important here since children are stored in decreasing
+    -- order and binomial heaps are supposed to be in increasing order.
+    mergeBinomHeaps (reverse (bChildren t)) heap'
