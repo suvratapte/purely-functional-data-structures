@@ -123,7 +123,22 @@ deleteMinimumFromHeap heap =
     -- order and binomial heaps are supposed to be in increasing order.
     mergeBinomHeaps (reverse (bChildren t)) heap'
 
-{- Red Black Trees -}
+{- Red-Black Trees -}
+
+{-
+
+Red-Black trees are BSTs where each node is colored either red or black.
+
+Red-Black trees have the following invariants:
+Invariant 1. No red node has a red child.
+Invariant 2. Every path from the root to an empty node contains the same
+number of black nodes.
+
+Taken together, these two invariants guarantee that the longest possible path in
+a red-black tree, one with alternating black and red nodes, is no more than
+twice as long as the shortest possible path, one with black nodes only.
+
+-}
 
 data Color = R | B
   deriving (Eq, Show)
