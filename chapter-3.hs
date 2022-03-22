@@ -122,3 +122,57 @@ deleteMinimumFromHeap heap =
     -- Reversing is very important here since children are stored in decreasing
     -- order and binomial heaps are supposed to be in increasing order.
     mergeBinomHeaps (reverse (bChildren t)) heap'
+
+{- Red Black Trees -}
+
+data Color = R | B
+  deriving (Eq, Show)
+
+data RBTree a =
+    E
+  | RBTNode Color (RBTree a) a (RBTree a)
+  deriving (Eq, Show)
+
+memberRBT :: Ord a => a -> RBTree a -> Bool
+memberRBT x E = False
+memberRBT x (RBTNode _ left value right)
+  | x < value = memberRBT x left
+  | x > value = memberRBT x right
+  | otherwise = True
+
+-- Balances Black-Red-Red paths.
+balanceRBT :: RBTree a -> RBTree a
+
+-- Left-Left path
+balanceRBT
+  (RBTNode B (RBTNode R (RBTNode R a x b) y c) z d) =
+    RBTNode R (RBTNode B a x b) y (RBTNode B c z d)
+
+-- Left-Right path
+balanceRBT
+  (RBTNode B (RBTNode R a x (RBTNode R b y c)) z d) =
+    RBTNode R (RBTNode B a x b) y (RBTNode B c z d)
+
+-- Right-Left path
+balanceRBT
+  (RBTNode B a x (RBTNode R (RBTNode R b y c) z d)) =
+    RBTNode R (RBTNode B a x b) y (RBTNode B c z d)
+
+-- Right-Right path
+balanceRBT
+  (RBTNode B a x (RBTNode R b y (RBTNode R c z d))) =
+    RBTNode R (RBTNode B a x b) y (RBTNode B c z d)
+
+balanceRBT somethingElse = somethingElse
+
+insertRBT :: Ord a => a -> RBTree a -> RBTree a
+insertRBT x s =
+  let (RBTNode _ l v r) = go s -- We are sure that this will never return E.
+  in
+    RBTNode B l v r
+  where
+   go E = RBTNode R E x E
+   go node@(RBTNode color left value right)
+     | x < value = balanceRBT $ RBTNode color (go left) value right
+     | x > value = balanceRBT $ RBTNode color left value (go right)
+     | otherwise = node
