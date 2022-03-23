@@ -91,10 +91,10 @@ member' search node = go search node
 {-
 Exercise 2.3
 
-Inserting an existing element into a binary search tree copies the entire search --
-path even though the copied nodes are indistinguishable from the --
-originals. Rewrite insert using exceptions to avoid this copying. Establish only --
-one handler per insertion rather than one handler per iteration. --
+Inserting an existing element into a binary search tree copies the entire search
+path even though the copied nodes are indistinguishable from the originals.
+Rewrite insert using exceptions to avoid this copying. Establish only one
+handler per insertion rather than one handler per iteration.
 -}
 
 -- One shortcut implementation would be to just check membership before
@@ -182,3 +182,18 @@ complete a depth =
   let node = complete a $ depth - 1
   in
     Node node a node
+
+-- `div` is used to round down the division.
+create :: a -> Int -> Tree a
+create a 0 = Empty
+create a size =
+  if odd size
+  then
+    let child = create a $ size `div` 2
+    in
+      Node child a child
+  else
+    let leftChild = create a $ size `div` 2
+        rightChild = create a $ (size `div` 2) - 1
+    in
+      Node leftChild a rightChild
