@@ -197,3 +197,29 @@ create a size =
         rightChild = create a $ (size `div` 2) - 1
     in
       Node leftChild a rightChild
+
+{-
+Exercise 2.6
+
+Adapt the UnbalancedSet functor to support finite maps rather than sets.
+
+According to the following API:
+
+empty :: Map k v
+bind :: k -> v -> Map k v -> Map k v
+lookup :: Kay -> Map k v -> v
+-}
+
+lookup' :: (Ord k) => k -> Tree (k, v) -> Maybe v
+lookup' _ Empty = Nothing
+lookup' x (Node left (key, value) right)
+  | x < key = lookup' x left
+  | x > key = lookup' x right
+  | otherwise = Just value
+
+bind :: (Ord k) => k -> v -> Tree (k, v) -> Tree (k, v)
+bind k v Empty = Node Empty (k, v) Empty
+bind k v node@(Node left (key, value) right)
+  | k < key = Node (bind k v left) (key, value) right
+  | k > key = Node left (key, value) $ bind k v right
+  | otherwise = node
