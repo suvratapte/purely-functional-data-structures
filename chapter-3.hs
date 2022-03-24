@@ -41,6 +41,26 @@ merge nx@(Node _ x xl xr) ny@(Node _ y yl yr) =
 insert :: Ord a => a -> LeftistHeap a -> LeftistHeap a
 insert value t = merge t $ Node 1 value Empty Empty
 
+{-
+Exercise 3.2
+
+Define insert directly rather than via a call to merge.
+-}
+
+insert' :: Ord a => a -> LeftistHeap a -> LeftistHeap a
+insert' x Empty = Node 1 x Empty Empty
+insert' x node@(Node r value left right) =
+  if x < value
+  then Node (r + 1) x node Empty
+  else
+    let new = insert' x right
+        rNew = rank new
+        rLeft = rank left
+    in
+      if rNew < rLeft
+      then Node (1 + rNew) value left new
+      else Node (1 + rLeft) value new left
+
 findMin :: LeftistHeap a -> a
 findMin Empty = error "Empty heap"
 findMin (Node _ value _ _) = value
