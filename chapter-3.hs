@@ -44,14 +44,14 @@ So the size, s, of a leftist heap with rank n has to be greater than or equal to
 its minimum possible size (2^n - 1):
 
 s >= 2^n - 1
+
 s + 1 >= 2^n
+
 log (s + 1) >= s             -- Log to the base 2
 
 And since size, s, has to be an integer,
 
 floor (log (s + 1)) >= s
-
-Hence proved.
 
 -}
 
