@@ -106,13 +106,13 @@ foldl, merge the heaps in "ceil (log (n))" passes, where each pass merges
 adjacent pairs of heaps. Show that fromList takes only O(n) time.
 -}
 
-heapFromHeaps :: Ord a => [LeftistHeap a] -> [LeftistHeap a]
-heapFromHeaps [] = []
-heapFromHeaps [a] = [a]
-heapFromHeaps (a : b : bs) = heapFromHeaps (merge a b : heapFromHeaps bs)
-
 heapFromList :: Ord a => [a] -> LeftistHeap a
-heapFromList as = head . heapFromHeaps $ map (`insert` Empty) as
+heapFromList as = head . go $ map (`insert` Empty) as
+  where
+    go :: Ord a => [LeftistHeap a] -> [LeftistHeap a]
+    go [] = []
+    go [a] = [a]
+    go (a : b : bs) = go (merge a b : go bs)
 
 findMin :: LeftistHeap a -> a
 findMin Empty = error "Empty heap"
