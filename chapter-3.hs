@@ -65,24 +65,20 @@ rank :: LeftistHeap a -> Int
 rank Empty = 0
 rank (Node r _ _ _) = r
 
+-- Creates a new node by looking at the ranks of the left and right nodes
+-- and swapping the left and right nodes if required; to maintain the
+-- leftist heap property
+makeNode :: a -> LeftistHeap a -> LeftistHeap a -> LeftistHeap a
+makeNode value left right
+  | rank left >= rank right = Node (1 + rank right) value left right
+  | otherwise = Node (1 + rank left) value right left
+
 merge :: Ord a => LeftistHeap a -> LeftistHeap a -> LeftistHeap a
 merge t Empty = t
 merge Empty t = t
-merge nx@(Node _ x xl xr) ny@(Node _ y yl yr) =
-  if x < y
-  then makeNode x xl $ merge xr ny
-  else makeNode y yl $ merge yr nx
-  where
-    -- Creates a new node by looking at the ranks of the left and right nodes
-    -- and swapping the left and right nodes if required; to maintain the
-    -- leftist heap property
-    makeNode value left right =
-      let rl = rank left
-          rr = rank right
-      in
-        if rl >= rr
-        then Node (1 + rl) value left right
-        else Node (1 + rr) value right left
+merge nx@(Node _ x xl xr) ny@(Node _ y yl yr)
+  | x < y = makeNode x xl $ merge xr ny
+  | otherwise = makeNode y yl $ merge nx yr
 
 insert :: Ord a => a -> LeftistHeap a -> LeftistHeap a
 insert value t = merge t $ Node 1 value Empty Empty
@@ -95,17 +91,9 @@ Define insert directly rather than via a call to merge.
 
 insert' :: Ord a => a -> LeftistHeap a -> LeftistHeap a
 insert' x Empty = Node 1 x Empty Empty
-insert' x node@(Node r value left right) =
-  if x < value
-  then Node (r + 1) x node Empty
-  else
-    let new = insert' x right
-        rNew = rank new
-        rLeft = rank left
-    in
-      if rNew < rLeft
-      then Node (1 + rNew) value left new
-      else Node (1 + rLeft) value new left
+insert' x node@(Node r value left right)
+  | x < value = Node (r + 1) x node Empty
+  | otherwise = makeNode value left $ insert' x right
 
 findMin :: LeftistHeap a -> a
 findMin Empty = error "Empty heap"
