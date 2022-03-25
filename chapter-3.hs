@@ -9,6 +9,52 @@ simple consequence of the leftist property is that the right spine of any node
 is always the shortest path to an empty node.
 -}
 
+{-
+Exercise 3.1
+
+Prove that the right spine of a leftist heap of size n contains at most
+floor (log(n +1)) elements.
+
+(All logarithms in this book are base 2 unless otherwiseindicated.)
+-}
+
+{-
+Let's figure out what's the minimum size of a leftist heap of rank n.
+
+For any parent, we know these two things:
+
+1. Rank (parent) = Rank (right child) + 1
+2. Rank (left child) >= Rank (right child)
+
+Since we are figuring out the "minimum" size, we can change the ">=" to "=" in
+the second point above. So:
+
+1. Rank (parent) = Rank (right child) + 1
+2. Rank (left child) = Rank (right child)
+
+With this, we can see that minimum size of leftist heap of rank n is:
+
+2^n - 1
+
+If we less nodes than 2^n - 1, the second property above stops holding true or
+in case where the right most leaf node is removed, the rank does not remain n
+anymore.
+
+So the size, s, of a leftist heap with rank n has to be greater than or equal to
+its minimum possible size (2^n - 1):
+
+s >= 2^n - 1
+s + 1 >= 2^n
+log (s + 1) >= s             -- Log to the base 2
+
+And since size, s, has to be an integer,
+
+floor (log (s + 1)) >= s
+
+Hence proved.
+
+-}
+
 data LeftistHeap a =
     Empty
   | Node Int a (LeftistHeap a) (LeftistHeap a)
