@@ -122,6 +122,64 @@ deleteMin :: Ord a => LeftistHeap a -> LeftistHeap a
 deleteMin Empty = error "Empty heap"
 deleteMin (Node _ _ l r) = merge l r
 
+{-
+Exercise 3.4
+
+(Cho and Sahni [CS96]) Weight-biased leftist heaps are an alternative to leftist
+heaps that replace the leftist property with the weight-biased leftist property:
+the size of any left child is at least as large as the size of its right
+sibling.
+
+(a) Prove that the right spine of a weight-biased leftist heap contains at most
+floor ( log (n + 1) ) elements.
+
+(b) Modify the implementation to obtain weight-biased leftist heaps.
+
+(c) Currently, merge operates in two passes: a top-down pass consisting of calls
+to merge, and a bottom-up pass consisting of calls to the helper function
+makeT. Modify merge for weight-biased leftist heaps to operate in a single,
+top-down pass.
+
+(d) What advantages would the top-down version of merge have in a lazy
+environment? In a concurrent environment?
+-}
+
+data WBLeftistHeap a =
+    EmptyWb
+  | NodeWb Int a (WBLeftistHeap a) (WBLeftistHeap a)
+  -- Size, value, left heap, right heap
+  deriving (Eq, Show)
+
+size :: WBLeftistHeap a -> Int
+size EmptyWb = 0
+size (NodeWb r _ _ _) = r
+
+-- Creates a new node by looking at the ranks of the left and right nodes
+-- and swapping the left and right nodes if required; to maintain the
+-- leftist heap property
+makeNodeWb :: a -> WBLeftistHeap a -> WBLeftistHeap a -> WBLeftistHeap a
+makeNodeWb value left right
+  | size left >= size right = NodeWb (1 + size left + size right) value left right
+  | otherwise = NodeWb (1 + size left + size right) value right left
+
+mergeWb :: Ord a => WBLeftistHeap a -> WBLeftistHeap a -> WBLeftistHeap a
+mergeWb t EmptyWb = t
+mergeWb EmptyWb t = t
+mergeWb nx@(NodeWb _ x xl xr) ny@(NodeWb _ y yl yr)
+  | x < y = makeNodeWb x xl $ mergeWb xr ny
+  | otherwise = makeNodeWb y yl $ mergeWb nx yr
+
+insertWb :: Ord a => a -> WBLeftistHeap a -> WBLeftistHeap a
+insertWb value t = mergeWb t $ NodeWb 1 value EmptyWb EmptyWb
+
+findMinWb :: WBLeftistHeap a -> a
+findMinWb EmptyWb = error "Empty heap"
+findMinWb (NodeWb _ value _ _) = value
+
+deleteMinWb :: Ord a => WBLeftistHeap a -> WBLeftistHeap a
+deleteMinWb EmptyWb = error "Empty heap"
+deleteMinWb (NodeWb _ _ l r) = mergeWb l r
+
 ---
 
 {- Binomial Heaps -}
